@@ -4,7 +4,7 @@ import aiohttp
 import asyncpg
 from datetime import datetime
 from typing import Dict, Any, Optional, List
-from loguru import logger
+from loguru import #logger
 import os
 
 # Constants
@@ -13,10 +13,10 @@ API_TOKEN = '7517b7af0ec749a87c72ba1e443eea0fa7f29e3e0945f22a8a78ec4355567eb7f32
 FETCH_INTERVAL = 180  # 3 minutes in seconds
 
 # Настройка логирования
-logger.add("poizon_parser.log", rotation="500 MB", level="INFO")
+#logger.add("poizon_parser.log", rotation="500 MB", level="INFO")
 
 class APIClient:
-    def __init__(self):
+    def __init__(self
         self.session = None
         self.headers = {'X-Auth-Token': API_TOKEN}
 
@@ -37,12 +37,12 @@ class APIClient:
         try:
             async with self.session.get(API_URL, params=params, timeout=300) as response:
                 if response.status != 200:
-                    logger.error(f"API error: {response.status} - {await response.text()}")
+                    #logger.error(f"API error: {response.status} - {await response.text()}")
                     return {'products': [], 'next_scroll_id': None}
 
                 data = await response.json()
                 if data['status'] != 'ok':
-                    logger.error(f"API error: {data['message']}")
+                    #logger.error(f"API error: {data['message']}")
                     return {'products': [], 'next_scroll_id': None}
 
                 return {
@@ -50,7 +50,7 @@ class APIClient:
                     'next_scroll_id': data['result']['scroll']['id'] if data['result'].get('scroll') else None
                 }
         except Exception as e:
-            logger.error(f"API request error: {e}")
+            ##logger.error(f"API request error: {e}")
             return {'products': [], 'next_scroll_id': None}
 
     async def get_prices(self, product_ids: List[int]) -> Dict[str, Any]:
@@ -67,17 +67,17 @@ class APIClient:
         try:
             async with self.session.post(url, params=params, json=data, timeout=300) as response:
                 if response.status != 200:
-                    logger.error(f"Price API error: {response.status} - {await response.text()}")
+                    #logger.error(f"Price API error: {response.status} - {await response.text()}")
                     return {'items': []}
 
                 data = await response.json()
                 if data['status'] != 'ok':
-                    logger.error(f"Price API error: {data['message']}")
+                    #logger.error(f"Price API error: {data['message']}")
                     return {'items': []}
 
                 return data['result']
         except Exception as e:
-            logger.error(f"Price API request error: {e}")
+            #logger.error(f"Price API request error: {e}")
             return {'items': []}
 
 class PoizonFetcher:
@@ -95,9 +95,9 @@ class PoizonFetcher:
                 min_size=1,
                 max_size=10
             )
-            logger.info("Database connection established")
+            #logger.info("Database connection established")
         except Exception as e:
-            logger.error(f"Failed to connect to database: {e}")
+            #logger.error(f"Failed to connect to database: {e}")
             raise
 
     async def load_parsing_state(self) -> Optional[Dict[str, Any]]:
@@ -115,7 +115,7 @@ class PoizonFetcher:
             if state:
                 self.scroll_id = state['scroll_id']
                 self.last_processed_id = state['last_processed_id']
-                logger.info(f"Loaded parsing state: scroll_id={self.scroll_id}, last_id={self.last_processed_id}")
+                #logger.info(f"Loaded parsing state: scroll_id={self.scroll_id}, last_id={self.last_processed_id}")
                 return dict(state)
             return None
 
@@ -135,7 +135,7 @@ class PoizonFetcher:
                 self.scroll_id,
                 self.last_processed_id
             )
-            logger.debug(f"Saved parsing state: scroll_id={self.scroll_id}, last_id={self.last_processed_id}")
+            #logger.debug(f"Saved parsing state: scroll_id={self.scroll_id}, last_id={self.last_processed_id}")
 
     async def save_product(self, product_data: Dict[str, Any]):
         """Сохранение товара в базу данных"""
@@ -302,21 +302,21 @@ class PoizonFetcher:
                         self.scroll_id = response['next_scroll_id']
                         
                         if not products:
-                            logger.info("No more products to process")
+                            #logger.info("No more products to process")
                             break
                         
                         for product in products:
                             await self.save_product(product)
                             self.last_processed_id = product['id']
                             await self.save_parsing_state()
-                            logger.info(f"Processed product {product['id']}")
+                            #logger.info(f"Processed product {product['id']}")
 
                 except Exception as e:
-                    logger.error(f"Error during product fetching: {e}")
+                    #logger.error(f"Error during product fetching: {e}")
                     await asyncio.sleep(5)  # Задержка перед повторной попыткой
 
         except Exception as e:
-            logger.error(f"Critical error in fetch_products: {e}")
+            #logger.error(f"Critical error in fetch_products: {e}")
         finally:
             if self.db_pool:
                 await self.db_pool.close()
@@ -327,7 +327,7 @@ class PoizonFetcher:
             await self.init_db()
             await self.fetch_products()
         except Exception as e:
-            logger.error(f"Error in fetcher run: {e}")
+            #logger.error(f"Error in fetcher run: {e}")
         finally:
             self.is_running = False
 
